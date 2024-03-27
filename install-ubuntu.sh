@@ -19,7 +19,7 @@ if [[ $? != 0 ]] ; then
     echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/$USER/.zprofile
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 else
-    printf "brew is already installed, skipping: \n"x
+    printf "brew is already installed, skipping: \n"
 fi
 
 
