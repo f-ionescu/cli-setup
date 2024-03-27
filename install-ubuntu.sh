@@ -132,7 +132,7 @@ cp .vimrc $HOME/.vimrc
 cp .tmux.conf $HOME/.tmux.conf
 cp .zsh_aliases $HOME/.zsh_aliases
 cp .zshrc.oh-my-zsh $HOME/.zshrc
-cp .p10k.zsh.oh-my-zsh $HOME/.p10k.zsh
+cp .p10k.zsh $HOME/.p10k.zsh
 
 
 
