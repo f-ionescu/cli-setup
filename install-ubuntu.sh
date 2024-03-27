@@ -4,10 +4,10 @@ printf "Enter the sudo password: "
 read -s PASSWORD
 
 #Install packages
-echo $PASSWORD | sudo apt update && sudo apt install zsh python3-pip unzip tmux powerline fonts-powerline keychain
+echo $PASSWORD | sudo apt update && sudo apt install -y zsh python3-pip unzip tmux powerline fonts-powerline keychain
 
 # Install Homebrew's dependencies
-echo $PASSWORD | sudo apt-get install build-essential
+echo $PASSWORD | sudo apt-get install -y build-essential
 
 # Brew install condition
 which -s brew
@@ -39,71 +39,101 @@ brew install --quiet kubect kubectx kube-ps1 eksctl k9s
 brew install --quiet ansible terraform
 
 
-# Install zsh addons
-if [ -d $HOME/.oh-my-zsh ]; then
-  echo "Oh-my-zsh already exists, skipping installation"
+# Function to install Oh-My-Zsh plugins
+install_zsh_plugin() {
+    local plugin_name=$1
+    local repo_url=$2
+    local install_path="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/$plugin_name"
+
+    if [ -d "$install_path" ]; then
+        echo "Plugin $plugin_name already exists, skipping installation."
+    else
+        git clone --depth=1 "$repo_url" "$install_path"
+    fi
+}
+
+# Install Oh-my-zsh if not already installed
+if [ -d "$HOME/.oh-my-zsh" ]; then
+    echo "Oh-my-zsh already exists, skipping installation."
 else
-  sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 fi
 
-if [ -d $HOME/.oh-my-zsh/custom/themes/powerlevel10k ]; then
-  echo "Theme Powerlevel10k already exists, skipping installation."
-else
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-fi
+# Install Powerlevel10k theme
+install_zsh_plugin "themes/powerlevel10k" "https://github.com/romkatv/powerlevel10k.git"
 
-if [ -d $HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions ]; then
-  echo "Plugin zsh-autosuggestions already exists, skipping installation."
-else
-  git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-fi
+# Install zsh-autosuggestions plugin
+install_zsh_plugin "plugins/zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions"
 
-if [ -d $HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting ]; then
-  echo "Plugin zsh-syntax-highlightinh already exists, skipping installation."
-else
-  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-fi
+# Install zsh-syntax-highlighting plugin
+install_zsh_plugin "plugins/zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting.git"
 
-# Git config
-echo "Do you wish to config git?"
+
+# Prompt the user to configure Git
+echo "Do you wish to configure Git?"
 select yn in "Yes" "No"; do
     case $yn in
-        Yes ) printf "Git Full Name: \n";
-              read fullname;
-              printf "Git E-mail: \n";
-              read email;
-              touch $HOME/.gitconfig;
-              echo "[user]" >> $HOME/.gitconfig;
-              echo "email = $email" >> $HOME/.gitconfig;
-              echo "name = $fullname" >> $HOME/.gitconfig;
-              break;;
-        No ) break;;
+        Yes )
+            # If Yes, prompt for Git full name and email
+            printf "Git Full Name: \n";
+            read -r fullname;
+            printf "Git E-mail: \n";
+            read -r email;
+
+            # Write Git config to ~/.gitconfig file
+            cat <<EOF > "$HOME/.gitconfig"
+[user]
+    email = $email
+    name = $fullname
+EOF
+            echo "Git configured successfully."
+            break;;
+
+        No )
+            # If No, exit the script
+            echo "Exiting without configuring Git."
+            break;;
     esac
 done
 
-# Generate ssh key
-echo "Do you wish to create a ssh key?"
+
+# Prompt the user to create an SSH key
+echo "Do you wish to create an SSH key?"
 select yn in "Yes" "No"; do
     case $yn in
-        Yes ) 
-        if [ ! -d $HOME/.ssh ]; then
-          mkdir $HOME/.ssh
-        fi
-        printf "Enter file in which to save the key (/home/ubuntu/.ssh/id_rsa): ";
-        read filename
-        ssh-keygen -t rsa -b 4096 -C "$email" -f $HOME/.ssh/$filename;
-        eval $(ssh-agent -s);
-        ssh-add $HOME/.ssh/$filename;
-        break;;
-        No ) break;;
+        Yes )
+            # Ensure the ~/.ssh directory exists
+            mkdir -p "$HOME/.ssh"
+
+            # Prompt user for the filename
+            read -p "Enter the filename to save the key (default: /home/ubuntu/.ssh/id_rsa): " filename
+            filename=${filename:-id_rsa}
+
+            # Generate SSH key with specified filename
+            ssh-keygen -t rsa -b 4096 -C "$email" -f "$HOME/.ssh/$filename"
+
+            # Start SSH agent
+            eval "$(ssh-agent -s)"
+
+            # Add SSH key to SSH agent
+            ssh-add "$HOME/.ssh/$filename"
+
+            echo "SSH key created successfully."
+            break;;
+        No )
+            echo "Exiting without creating an SSH key."
+            break;;
     esac
 done
+
 
 # Copy cfg files to home directory
 cp .vimrc $HOME/.vimrc
 cp .tmux.conf $HOME/.tmux.conf
 cp .zsh_aliases $HOME/.zsh_aliases
 cp .zshrc.oh-my-zsh $HOME/.zshrc
+cp .p10k.zsh.oh-my-zsh $HOME/.p10k.zsh
+
 
 
 # Make zsh the default shell
