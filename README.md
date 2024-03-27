@@ -16,8 +16,8 @@ The script is configuring [Oh-My-Zsh](https://github.com/romkatv/powerlevel10k) 
 Usage:
 1. Clone the repo, and make the scripts executable
  ```bash
-git clone git@github.com:f-ionescu/local-files.git
-cd local-files
+git clone git@github.com:f-ionescu/cli-setup.git
+cd cli-setup
 chmod +x install*.sh
 ```
 
