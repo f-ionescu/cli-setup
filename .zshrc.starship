@@ -1,0 +1,43 @@
+#Enable Starship
+eval "$(starship init zsh)"
+
+#Enable Spaceship
+#source "$HOME/.zsh/spaceship/spaceship.zsh"
+
+#Load aliases file
+. ~/.zsh_aliases
+
+#Enable Powerline
+
+#Enable ZSH-Autosuggestions
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+#Enable ZSH-Sytax Highlighting
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+#Enable fuzzy finder
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+#Enable Zsh-Z
+source /usr/local/zsh-z/zsh-z.plugin.zsh
+
+#Display fzf in a smaller box
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+
+#Enable Kube-PS1
+source "/opt/homebrew/opt/kube-ps1/share/kube-ps1.sh"
+PS1='$(kube_ps1)'$PS1
+KUBE_PS1_SYMBOL_PADDING=true
+KUBE_PS1_SEPARATOR=''
+KUBE_PS1_CTX_COLOR=green
+
+#Store only successfully completed commands to history
+zshaddhistory() { whence ${${(z)1}[1]} >| /dev/null || return 1 }
+
+#Ignore zsh_history duplicates
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_FIND_NO_DUPS
+setopt HIST_SAVE_NO_DUPS
